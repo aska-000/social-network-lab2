@@ -24,6 +24,7 @@ class ConsoleApp(private val scanner: Scanner) {
                     "sub"    -> subscribe(arg)
                     "feed"   -> showFeed()
                     "rate"   -> rate(arg)
+                    "notes"  -> showNotifications()   // ← новая команда (по желанию)
                     "exit", "quit" -> { println("Выход."); return }
                     else -> println("Неизвестная команда. Введите 'exit' для выхода.")
                 }
@@ -34,11 +35,13 @@ class ConsoleApp(private val scanner: Scanner) {
     }
 
 
+
     private fun register(name: String) {
         if (name.isBlank()) { println("Укажите имя: reg <имя>"); return }
         val u = SocialNetwork.register(name)
         currentUser = u
         println("Пользователь '${u.name}' зарегистрирован и выполнен вход.")
+        showNotifications()
     }
 
     private fun logout() {
@@ -99,6 +102,15 @@ class ConsoleApp(private val scanner: Scanner) {
         else println("Нельзя оценивать собственную запись.")
     }
 
+    private fun showNotifications() {
+        val user = currentUser ?: return
+        val notes = user.pullNotifications()
+        if (notes.isEmpty()) return
+        println("Новые уведомления для ${user.name}")
+        notes.forEach { println("$it") }
+    }
+
+
     private fun requireUser(): User? {
         val u = currentUser
         if (u == null) println("Сначала зарегистрируйтесь: reg <имя>")
@@ -108,7 +120,7 @@ class ConsoleApp(private val scanner: Scanner) {
     private fun printHelp() {
         println(
             """
-            Социальная сеть
+            Социальная сеть 
             reg <имя>                  — создать пользователя и войти
             logout                     — выйти из аккаунта
             post <текст>               — опубликовать запись
@@ -116,6 +128,7 @@ class ConsoleApp(private val scanner: Scanner) {
             sub <имя>                  — подписаться на пользователя
             feed                       — лента подписок
             rate <автор> <№> <1..5>    — оценить запись
+            notes                      — показать новые уведомления
             exit                       — выход
             """.trimIndent()
         )
